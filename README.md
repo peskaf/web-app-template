@@ -1,2 +1,3 @@
-# wix-forms-webhooks
-Custom webhooks for Wix Forms responses.
+# Diky Fotbalu Web App
+
+Custom web app to replace web app based on Wix and Zapier.
