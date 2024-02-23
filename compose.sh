@@ -1,8 +1,8 @@
 #!/bin/bash
 set -eu
 
-# Check if environment mode argument is provided
-if [ -z "$1" ]; then
+# Check if mode argument is provided
+if [ "$#" -lt 1 ]; then
     echo "Usage: $0 <mode> [docker-compose options]"
     exit 1
 fi
