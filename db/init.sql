@@ -1,23 +1,62 @@
 -- Create database roles and grant permissions
-CREATE ROLE admin_private LOGIN PASSWORD 'password_admin_private';
-CREATE ROLE admin_public LOGIN PASSWORD 'password_admin_public';
-CREATE ROLE read_user LOGIN PASSWORD 'password_read_user';
-CREATE ROLE write_user LOGIN PASSWORD 'password_write_user';
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT FROM pg_catalog.pg_roles 
+        WHERE rolname = 'admin_private'
+    ) THEN
+        CREATE ROLE admin_private LOGIN PASSWORD 'password_admin_private';
+    END IF;
+END
+$$;
+
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT FROM pg_catalog.pg_roles 
+        WHERE rolname = 'admin_public'
+    ) THEN
+        CREATE ROLE admin_public LOGIN PASSWORD 'password_admin_public';
+    END IF;
+END
+$$;
+
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT FROM pg_catalog.pg_roles 
+        WHERE rolname = 'read_user'
+    ) THEN
+        CREATE ROLE read_user LOGIN PASSWORD 'password_read_user';
+    END IF;
+END
+$$;
+
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT FROM pg_catalog.pg_roles 
+        WHERE rolname = 'write_user'
+    ) THEN
+        CREATE ROLE write_user LOGIN PASSWORD 'password_write_user';
+    END IF;
+END
+$$;
 
 -- Grant appropriate permissions to each role
 -- Admin private role (for server management only)
-GRANT ALL PRIVILEGES ON DATABASE db_name TO admin_private;
+GRANT ALL PRIVILEGES ON DATABASE dikyfotbalu TO admin_private;
 
 -- Public admin role (for publicly working with the database)
-GRANT CONNECT ON DATABASE db_name TO admin_public;
+GRANT CONNECT ON DATABASE dikyfotbalu TO admin_public;
 GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO admin_public;
 
 -- Read user role (for read-only access)
-GRANT CONNECT ON DATABASE db_name TO read_user;
+GRANT CONNECT ON DATABASE dikyfotbalu TO read_user;
 GRANT SELECT ON ALL TABLES IN SCHEMA public TO read_user;
 
 -- Write user role (for write access)
-GRANT CONNECT ON DATABASE db_name TO write_user;
+GRANT CONNECT ON DATABASE dikyfotbalu TO write_user;
 GRANT SELECT, INSERT, UPDATE ON ALL TABLES IN SCHEMA public TO write_user;
 
 -- Create a table for storing user information
