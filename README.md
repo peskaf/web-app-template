@@ -9,5 +9,5 @@ This is a custom template for web app with React frontend, Flask backend, Nginx 
 
 ## TODO
 
-[] add certbot to docker-compose and script for auto HTTPS setting
-[] increase overall default security of the app
+- [ ] add certbot to docker-compose and script for auto HTTPS setting
+- [ ] increase overall default security of the app
