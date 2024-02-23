@@ -1,0 +1,11 @@
+services:
+  react:
+    build:
+      context: ./client
+      dockerfile: Dockerfile.dev
+    volumes:
+      - ./client:/app
+    command: yarn start
+  nginx:
+    volumes:
+      - "./nginx/conf.d/dev/:/etc/nginx/conf.d/"

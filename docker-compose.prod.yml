@@ -1,0 +1,15 @@
+services:
+  react:
+    build:
+      context: ./client
+      dockerfile: Dockerfile.prod
+    volumes:
+      - react_static_files:/app/build
+  nginx:
+    volumes:
+      - "./nginx/conf.d/prod/:/etc/nginx/conf.d/"
+      - react_static_files:/usr/share/nginx/html
+
+volumes:
+  react_static_files:
+    driver: local

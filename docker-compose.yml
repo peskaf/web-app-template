@@ -1,12 +1,6 @@
 version: '3.1'
 
 services:
-  react:
-    build:
-      context: ./client
-    volumes:
-      - react_static_files:/app/build
-
   flask:
     build:
       context: ./server
@@ -33,12 +27,6 @@ services:
     depends_on:
       - react
       - flask
-    volumes:
-      - react_static_files:/usr/share/nginx/html
-      - ./nginx/conf.d/:/etc/nginx/conf.d/:ro
 
 volumes:
-  react_static_files:
-    driver: local
-
   postgres_data:
