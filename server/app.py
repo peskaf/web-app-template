@@ -36,29 +36,48 @@ def select_all_from_table(conn, table_name):
 
 
 def list_all_tables(conn):
-    # Create a cursor object using the connection
     cursor = conn.cursor()
 
     try:
-        # Construct the SQL query to get all table names
         query = """
         SELECT table_name
         FROM information_schema.tables
         WHERE table_schema = 'public' AND table_type = 'BASE TABLE';
         """
 
-        # Execute the query to get all table names
         cursor.execute(query)
-
-        # Fetch all table names from the result set
         table_names = cursor.fetchall()
 
-        # Return the list of table names
         return [table_name[0] for table_name in table_names]
 
     finally:
-        # Close the cursor
         cursor.close()
+
+
+def list_all_roles(conn):
+
+    # Create a cursor object using the connection
+    cursor = conn.cursor()
+
+    try:
+        # Execute SQL query to fetch all roles
+        cursor.execute("SELECT rolname FROM pg_catalog.pg_roles;")
+
+        # Fetch all rows from the result set
+        rows = cursor.fetchall()
+
+        # Extract role names from rows
+        roles = [row[0] for row in rows]
+
+        return roles
+
+    except psycopg2.Error as e:
+        print("Error fetching roles:", e)
+
+    finally:
+        # Close the cursor and connection
+        cursor.close()
+        conn.close()
 
 
 @app.route("/")
@@ -66,12 +85,7 @@ def health_check():
     return "OK"
 
 
-@app.route("/tournament", methods=["GET"])
-def tournament():
-    return "OK"
-
-
-@app.route("/db", methods=["GET"])
+@app.route("/db-test", methods=["GET"])
 def db():
     conn = psycopg2.connect(
         dbname=os.getenv("POSTGRES_DB"),
@@ -81,6 +95,7 @@ def db():
         port=5432,
     )
 
-    results = select_all_from_table(conn, "users")
-    # results = list_all_tables(conn)
-    return jsonify(results)
+    test_table_users = select_all_from_table(conn, "test")
+    tables = list_all_tables(conn)
+    roles = list_all_roles(conn)
+    return jsonify({"test_data": test_table_users, "tables": tables, "roles": roles})

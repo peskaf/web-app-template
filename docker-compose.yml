@@ -18,11 +18,12 @@ services:
 
   postgres:
     image: postgres:latest
+    restart: always
     env_file:
       - .env
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./db/:/docker-entrypoint-initdb.d/
 
   nginx:
     image: nginx:alpine
