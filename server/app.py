@@ -55,18 +55,11 @@ def list_all_tables(conn):
 
 
 def list_all_roles(conn):
-
-    # Create a cursor object using the connection
     cursor = conn.cursor()
 
     try:
-        # Execute SQL query to fetch all roles
         cursor.execute("SELECT rolname FROM pg_catalog.pg_roles;")
-
-        # Fetch all rows from the result set
         rows = cursor.fetchall()
-
-        # Extract role names from rows
         roles = [row[0] for row in rows]
 
         return roles
@@ -75,7 +68,6 @@ def list_all_roles(conn):
         print("Error fetching roles:", e)
 
     finally:
-        # Close the cursor and connection
         cursor.close()
         conn.close()
 
