@@ -6,8 +6,9 @@ services:
     volumes:
       - react_static_files:/app/build
   nginx:
+    image: nginx:alpine
     volumes:
-      - "./nginx/conf.d/prod/:/etc/nginx/conf.d/"
+      - "./nginx/prod/conf.d/:/etc/nginx/conf.d/:ro"
       - react_static_files:/usr/share/nginx/html
 
 volumes:

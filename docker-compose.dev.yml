@@ -7,5 +7,11 @@ services:
       - ./client:/app
     command: yarn start
   nginx:
+    image: nginx:alpine
+    ports:
+      - 443:443
     volumes:
-      - "./nginx/conf.d/dev/:/etc/nginx/conf.d/"
+      - ./nginx/dev/conf.d/:/etc/nginx/conf.d/:ro
+      - ./local-certs/certs/:/etc/ssl/certs/
+      - ./local-certs/private/:/etc/ssl/private/
+    

@@ -20,7 +20,6 @@ services:
       - ./db/:/docker-entrypoint-initdb.d/
 
   nginx:
-    image: nginx:alpine
     restart: always
     ports:
       - "80:80"
