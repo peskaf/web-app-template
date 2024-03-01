@@ -7,8 +7,6 @@ services:
       - ./client:/app
     command: yarn start
   nginx:
-    ports:
-      - 443:443
     volumes:
       - ./nginx/dev/default.conf.template:/etc/nginx/templates/default.conf.template:ro
       - ./local-certs/certs/:/etc/ssl/certs/

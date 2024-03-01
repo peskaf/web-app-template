@@ -1,5 +1,5 @@
 #!/bin/bash
-set -eu
+set -eux
 
 # Function to extract specific environment variable from .env file
 get_env_variable() {
@@ -15,8 +15,9 @@ get_env_variable() {
     fi
 }
 
-# Load the PROD_SERVER_NAME environment variable from .env file
+# Load env vars from .env file
 PROD_SERVER_NAME=$(get_env_variable ".env" "PROD_SERVER_NAME")
+ADMIN_MAIL=$(get_env_variable ".env" "ADMIN_MAIL")
 
 # Get the directory of the script
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -41,17 +42,20 @@ if [ "$MODE" = "dev" ]; then
         mkcert -key-file "$SCRIPT_DIR/local-certs/private/localhost.key" -cert-file "$SCRIPT_DIR/local-certs/certs/localhost.pem" localhost
     fi
 elif [ "$MODE" = "prod" ]; then
+    echo "Value of SCRIPT_DIR: $SCRIPT_DIR"
+    echo "Value of PROD_SERVER_NAME: $PROD_SERVER_NAME"
+    echo "Value of fullchain.pem: $SCRIPT_DIR/certbot/conf/live/${PROD_SERVER_NAME}/fullchain.pem"
+    echo "Value of privkey.pem: $SCRIPT_DIR/certbot/conf/live/${PROD_SERVER_NAME}/privkey.pem"
     DOCKER_COMPOSE_EXTENSION="docker-compose.prod.yml"
     if [ "$1" != "down" ]; then # sep condition to make it clearer
-        if [ ! -f "$SCRIPT_DIR/certbot/conf/live/${PROD_SERVER_NAME}/fullchain.pem;" ] && [ ! -f "$SCRIPT_DIR/certbot/conf/live/${PROD_SERVER_NAME}/privkey.pem;" ]; then
-            # TODO: test
+        if [ ! -f "$SCRIPT_DIR/certbot/conf/live/${PROD_SERVER_NAME}/fullchain.pem" ] && [ ! -f "$SCRIPT_DIR/certbot/conf/live/${PROD_SERVER_NAME}/privkey.pem" ]; then
             # Run Certbot to generate certificates
-            docker compose -f "$SCRIPT_DIR/docker-compose.yml" -f "$SCRIPT_DIR/$DOCKER_COMPOSE_EXTENSION" run --rm certbot certonly --webroot --webroot-path /var/www/certbot/ -d $PROD_SERVER_NAME
-            # docker compose -f "$SCRIPT_DIR/docker-compose.yml" -f "$SCRIPT_DIR/$DOCKER_COMPOSE_EXTENSION" restart
-            docker compose -f "$SCRIPT_DIR/docker-compose.yml" -f "$SCRIPT_DIR/$DOCKER_COMPOSE_EXTENSION" down --remove-orphans
+            docker compose -f "$SCRIPT_DIR/docker-compose.cert-setup.yml" run --rm certbot certonly -n --webroot --webroot-path /var/www/certbot/ -d $PROD_SERVER_NAME -m $ADMIN_MAIL --agree-tos
+            docker compose -f "$SCRIPT_DIR/docker-compose.cert-setup.yml" down --remove-orphans
             echo "Certificates successfully generated."
         fi
     fi
+
 else
     echo "Invalid mode. Please specify 'dev' or 'prod'."
     exit 1
