@@ -20,12 +20,15 @@ services:
       - ./db/:/docker-entrypoint-initdb.d/
 
   nginx:
+    image: nginx:alpine
     restart: always
     ports:
       - "80:80"
     depends_on:
       - react
       - flask
+    env_file:
+      - .env
 
 volumes:
   postgres_data:

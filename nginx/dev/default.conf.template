@@ -11,17 +11,17 @@ server {
     listen [::]:80;
 
     location / {
-        return 308 https://localhost$request_uri;
+        return 308 https://${DEV_SERVER_NAME}$request_uri;
     }
 }
 
 server {
     listen 443 default_server ssl;
     listen [::]:443 ssl;
-    server_name localhost;
+    server_name ${DEV_SERVER_NAME};
 
-    ssl_certificate /etc/ssl/certs/localhost.pem;
-    ssl_certificate_key /etc/ssl/private/localhost.key;
+    ssl_certificate /etc/ssl/certs/${DEV_SERVER_NAME}.pem;
+    ssl_certificate_key /etc/ssl/private/${DEV_SERVER_NAME}.key;
     
     location /api/ {
         proxy_pass http://flask-app/;
