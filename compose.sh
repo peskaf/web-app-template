@@ -32,22 +32,25 @@ shift  # Remove the first argument from the list of arguments
 
 # Check if the mode is dev or prod
 if [ "$MODE" = "dev" ]; then
-    mkcert -install # Install root CA
-
-    mkdir -p "$SCRIPT_DIR/local-certs/private"
-    mkdir -p "$SCRIPT_DIR/local-certs/certs"
-    # Generate certificate and key for localhost
-    mkcert -key-file "$SCRIPT_DIR/local-certs/private/localhost.key" -cert-file "$SCRIPT_DIR/local-certs/certs/localhost.pem" localhost
     DOCKER_COMPOSE_EXTENSION="docker-compose.dev.yml"
+    if [ "$1" != "down" ]; then
+        mkcert -install # Install root CA
+        mkdir -p "$SCRIPT_DIR/local-certs/private"
+        mkdir -p "$SCRIPT_DIR/local-certs/certs"
+        # Generate certificate and key for localhost
+        mkcert -key-file "$SCRIPT_DIR/local-certs/private/localhost.key" -cert-file "$SCRIPT_DIR/local-certs/certs/localhost.pem" localhost
+    fi
 elif [ "$MODE" = "prod" ]; then
     DOCKER_COMPOSE_EXTENSION="docker-compose.prod.yml"
-    if [ ! -f "$SCRIPT_DIR/certbot/conf/live/${PROD_SERVER_NAME}/fullchain.pem;" ] && [ ! -f "$SCRIPT_DIR/certbot/conf/live/${PROD_SERVER_NAME}/privkey.pem;" ]; then
-        # TODO: test
-        # Run Certbot to generate certificates
-        docker compose -f "$SCRIPT_DIR/docker-compose.yml" -f "$SCRIPT_DIR/$DOCKER_COMPOSE_EXTENSION" run --rm certbot certonly --webroot --webroot-path /var/www/certbot/ -d $PROD_SERVER_NAME
-        # docker compose -f "$SCRIPT_DIR/docker-compose.yml" -f "$SCRIPT_DIR/$DOCKER_COMPOSE_EXTENSION" restart
-        docker compose -f "$SCRIPT_DIR/docker-compose.yml" -f "$SCRIPT_DIR/$DOCKER_COMPOSE_EXTENSION" down --remove-orphans
-        echo "Certificates successfully generated."
+    if [ "$1" != "down" ]; then # sep condition to make it clearer
+        if [ ! -f "$SCRIPT_DIR/certbot/conf/live/${PROD_SERVER_NAME}/fullchain.pem;" ] && [ ! -f "$SCRIPT_DIR/certbot/conf/live/${PROD_SERVER_NAME}/privkey.pem;" ]; then
+            # TODO: test
+            # Run Certbot to generate certificates
+            docker compose -f "$SCRIPT_DIR/docker-compose.yml" -f "$SCRIPT_DIR/$DOCKER_COMPOSE_EXTENSION" run --rm certbot certonly --webroot --webroot-path /var/www/certbot/ -d $PROD_SERVER_NAME
+            # docker compose -f "$SCRIPT_DIR/docker-compose.yml" -f "$SCRIPT_DIR/$DOCKER_COMPOSE_EXTENSION" restart
+            docker compose -f "$SCRIPT_DIR/docker-compose.yml" -f "$SCRIPT_DIR/$DOCKER_COMPOSE_EXTENSION" down --remove-orphans
+            echo "Certificates successfully generated."
+        fi
     fi
 else
     echo "Invalid mode. Please specify 'dev' or 'prod'."
