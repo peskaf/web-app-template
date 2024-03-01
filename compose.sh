@@ -1,5 +1,5 @@
 #!/bin/bash
-set -eux
+set -eu
 
 # Function to extract specific environment variable from .env file
 get_env_variable() {
