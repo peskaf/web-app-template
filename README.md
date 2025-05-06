@@ -19,6 +19,7 @@ mkdir -p "./local-certs/certs"
 mkcert -key-file "./local-certs/private/localhost.key" -cert-file "./local-certs/certs/localhost.pem" localhost
 ```
 from the root of this repo to create locally trusted certificates and to trust the local CA.
+
 3. Run `docker compose --profile dev up`.
 4. Web app is available as `localhost` in a browser and works with HTTPS.
 
