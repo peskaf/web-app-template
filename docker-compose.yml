@@ -125,7 +125,7 @@ services:
       sh -c "
         if [ ! -f /certs/certs/localhost.pem ]; then
           echo 'Creating local certs...';
-          mkcert -cert-file /certs/certs/localhost.pem -key-file /certs/private/localhost.key localhost 185.8.164.40;
+          mkcert -cert-file /certs/certs/localhost.pem -key-file /certs/private/localhost.key localhost;
         else
           echo 'Local certs already exist, skipping mkcert.';
         fi

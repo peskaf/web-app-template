@@ -12,13 +12,13 @@ The web app can operate in development or production mode. Production mode serve
 
 1. Install [`mkcert`](https://github.com/FiloSottile/mkcert) using provided [script](/scripts/install-mkcert.sh) if using Ubuntu. Use `brew install mkcert` on macOS, eventually look [here](https://github.com/FiloSottile/mkcert).
 2. Run 
-```
+```shell
 mkcert -install
 mkdir -p "./local-certs/private"
 mkdir -p "./local-certs/certs"
 mkcert -key-file "./local-certs/private/localhost.key" -cert-file "./local-certs/certs/localhost.pem" localhost
 ```
-from the root of this repo.
+from the root of this repo to create locally trusted certificates and to trust the local CA.
 3. Run `docker compose --profile dev up`.
 4. Web app is available as `localhost` in a browser and works with HTTPS.
 
