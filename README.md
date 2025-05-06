@@ -10,12 +10,21 @@ The web app can operate in development or production mode. Production mode serve
 
 ### Dev
 
-1. Install [`mkcert`](https://github.com/FiloSottile/mkcert) using provided [script](/scripts/install-mkcert.sh).
-2. Run `./compose.sh dev up --build` - this way, also certificates for localhost that are locally trusted get created.
-3. Web app is available as `localhost` in a browser and works with HTTPS.
+1. Install [`mkcert`](https://github.com/FiloSottile/mkcert) using provided [script](/scripts/install-mkcert.sh) if using Ubuntu. Use `brew install mkcert` on macOS, eventually look [here](https://github.com/FiloSottile/mkcert).
+2. Run 
+```
+mkcert -install
+mkdir -p "./local-certs/private"
+mkdir -p "./local-certs/certs"
+mkcert -key-file "./local-certs/private/localhost.key" -cert-file "./local-certs/certs/localhost.pem" localhost
+```
+from the root of this repo.
+3. Run `docker compose --profile dev up`.
+4. Web app is available as `localhost` in a browser and works with HTTPS.
 
 ### Prod
-1. Run `./compose.sh prod up --build -d`.
+1. Run `docker compose --profile cert up --abort-on-container-exit` to generate certificates (first use only).
+2. Run `docker compose --profile prod up`.
 2. Web app is accessible on the domain provided in PROD_SERVER_NAME env variable and works with HTTPS.
 
 ## Idea
@@ -24,6 +33,5 @@ I want to create template for web app that can be developed on localhost and the
 
 ## TODO
 
-- [x] add certbot to docker-compose and script for auto HTTPS setting
 - [ ] increase overall default security of the app
 - [ ] template for GitHub CI/CD pipeline for upload to production server

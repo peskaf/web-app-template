@@ -1,0 +1,136 @@
+services:
+  nginx-cert:
+    profiles: ["cert"]
+    image: nginx:alpine
+    env_file:
+      - .env
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/prod/cert-setup.conf.template:/etc/nginx/templates/default.conf.template:ro
+      - ./certbot/www:/var/www/certbot/:ro
+      - ./certbot/conf/:/etc/nginx/ssl/:ro
+
+  certbot-init:
+    image: certbot/certbot:latest
+    profiles: ["cert"]
+    volumes:
+      - ./certbot/www/:/var/www/certbot/:rw
+      - ./certbot/conf/:/etc/letsencrypt/:rw
+    depends_on:
+      - nginx-cert
+    command: certonly -n --webroot --webroot-path /var/www/certbot/ -d ${PROD_SERVER_NAME} -m ${ADMIN_MAIL} --agree-tos; 
+
+  flask:
+    profiles: ["prod", "dev"]
+    build:
+      context: ./server
+    depends_on:
+      - postgres
+    env_file:
+      - .env
+    command: gunicorn --bind 0.0.0.0:5000 --timeout 0 "app:app"
+
+  postgres:
+    profiles: ["prod", "dev"]
+    image: postgres:latest
+    restart: always
+    env_file:
+      - .env
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./db/:/docker-entrypoint-initdb.d/
+
+  nginx-prod:
+    image: nginx:alpine
+    restart: always
+    profiles: ["prod"]
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - react-prod
+      - flask
+    env_file:
+      - .env
+    volumes:
+      - ./nginx/prod/default.conf.template:/etc/nginx/templates/default.conf.template:ro
+      - ./certbot/www:/var/www/certbot/:ro
+      - ./certbot/conf/:/etc/nginx/ssl/:ro
+      - react_static_files:/usr/share/nginx/html
+    command: >
+      /bin/sh -c "
+      CERT_PATH="/etc/letsencrypt/live/${PROD_SERVER_NAME}/fullchain.pem";
+      if [ ! -f "$CERT_PATH" ]; then
+        echo 'Certificate not found at $CERT_PATH';
+        echo 'Please run: docker compose --profile cert up --abort-on-container-exit';
+        exit 1;
+      fi;
+      while :; do sleep 6h & wait $${!}; nginx -s reload; done & ./docker-entrypoint.sh nginx -g \"daemon off;\";
+      "
+
+  certbot:
+    profiles: ["prod"]
+    image: certbot/certbot:latest
+    restart: unless-stopped
+    volumes:
+      - ./certbot/www/:/var/www/certbot/:rw
+      - ./certbot/conf/:/etc/letsencrypt/:rw
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
+    depends_on:
+      - nginx-prod
+  
+  react-prod:
+    profiles: ["prod"]
+    build:
+      context: ./client
+      dockerfile: Dockerfile.prod
+    volumes:
+      - react_static_files:/app/build
+
+  react-dev:
+    profiles: ["dev"]
+    build:
+      context: ./client
+      dockerfile: Dockerfile.dev
+    volumes:
+      - ./client:/app
+      - /app/node_modules
+    command: yarn start
+  
+  nginx-dev:
+    image: nginx:alpine
+    restart: always
+    profiles: ["dev"]
+    ports:
+      - "80:80"
+      - "443:443"
+    env_file:
+      - .env
+    depends_on:
+      - react-dev
+      - flask
+      - mkcert
+    volumes:
+      - ./nginx/dev/default.conf.template:/etc/nginx/templates/default.conf.template:ro
+      - ./local-certs/certs/:/etc/ssl/certs/
+      - ./local-certs/private/:/etc/ssl/private/
+
+  mkcert:
+    image: brunopadz/mkcert-docker
+    profiles: ["dev"]
+    volumes:
+      - ./local-certs:/certs
+    command: >
+      sh -c "
+        if [ ! -f /certs/certs/localhost.pem ]; then
+          echo 'Creating local certs...';
+          mkcert -cert-file /certs/certs/localhost.pem -key-file /certs/private/localhost.key localhost 185.8.164.40;
+        else
+          echo 'Local certs already exist, skipping mkcert.';
+        fi
+      "
+
+volumes:
+  react_static_files:
+  postgres_data:

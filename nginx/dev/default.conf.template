@@ -3,7 +3,7 @@ upstream flask-app {
 }
 
 upstream react-app {
-    server react:3000;
+    server react-dev:3000;
 }
 
 server {
