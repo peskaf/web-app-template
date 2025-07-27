@@ -110,26 +110,10 @@ services:
     depends_on:
       - react-dev
       - flask
-      - mkcert
     volumes:
       - ./nginx/dev/default.conf.template:/etc/nginx/templates/default.conf.template:ro
       - ./local-certs/certs/:/etc/ssl/certs/
       - ./local-certs/private/:/etc/ssl/private/
-
-  mkcert:
-    image: brunopadz/mkcert-docker
-    profiles: ["dev"]
-    volumes:
-      - ./local-certs:/certs
-    command: >
-      sh -c "
-        if [ ! -f /certs/certs/localhost.pem ]; then
-          echo 'Creating local certs...';
-          mkcert -cert-file /certs/certs/localhost.pem -key-file /certs/private/localhost.key localhost;
-        else
-          echo 'Local certs already exist, skipping mkcert.';
-        fi
-      "
 
 volumes:
   react_static_files:
